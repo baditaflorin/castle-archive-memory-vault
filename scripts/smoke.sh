@@ -20,10 +20,16 @@ else
   npx playwright install chromium >/dev/null
 fi
 
+echo "==> kill any stale preview on :4173"
+if lsof -ti tcp:4173 >/dev/null 2>&1; then
+  lsof -ti tcp:4173 | xargs kill 2>/dev/null || true
+  sleep 1
+fi
+
 echo "==> start preview"
 ( npm run pages-preview -- --strictPort >/tmp/cam-preview.log 2>&1 & echo $! > /tmp/cam-preview.pid )
 PID="$(cat /tmp/cam-preview.pid)"
-trap 'kill "$PID" 2>/dev/null || true' EXIT
+trap 'kill "$PID" 2>/dev/null || true; lsof -ti tcp:4173 2>/dev/null | xargs kill 2>/dev/null || true' EXIT
 
 echo "==> wait for preview to be ready"
 for _ in $(seq 1 40); do
