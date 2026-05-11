@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# pre-commit: format, lint, type-check, naive secret + telemetry scan.
+
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+# Skip cleanly if nothing is staged
+if git diff --cached --quiet; then
+  exit 0
+fi
+
+echo "==> prettier --check"
+npm run --silent fmt:check
+
+echo "==> eslint + tsc --noEmit"
+npm run --silent lint
+
+# Scan only added lines in the staged diff, across all files.
+added_all=$(git diff --cached --diff-filter=ACMR -U0 -- ':!package-lock.json' \
+  | grep -E '^\+' | grep -Ev '^\+\+\+' || true)
+
+# Scan added lines limited to source files (TS/JS/HTML/JSX/TSX) for telemetry.
+code_paths=$(git diff --cached --name-only --diff-filter=ACMR \
+  -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.html' \
+     ':!.githooks/**' ':!docs/adr/**' ':!docs/**.md' || true)
+added_code=""
+if [ -n "$code_paths" ]; then
+  added_code=$(echo "$code_paths" | while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    git diff --cached --diff-filter=ACMR -U0 -- "$f" \
+      | grep -E '^\+' | grep -Ev '^\+\+\+' || true
+  done)
+fi
+
+echo "==> secret scan"
+if echo "$added_all" | grep -E \
+  -e 'AKIA[0-9A-Z]{16}' \
+  -e 'gh[pousr]_[A-Za-z0-9]{20,}' \
+  -e 'github_pat_[A-Za-z0-9_]{40,}' \
+  -e 'sk-[A-Za-z0-9]{32,}' \
+  -e '-----BEGIN (OPENSSH |RSA |EC )?PRIVATE KEY-----' \
+  >/dev/null 2>&1; then
+  echo "ERROR: staged content matches a secret pattern." >&2
+  exit 1
+fi
+
+echo "==> telemetry blocker"
+if echo "$added_code" | grep -E \
+  -e 'googletagmanager\.com' \
+  -e 'plausible\.io/js' \
+  -e 'posthog\.com' \
+  -e 'sentry-cdn|@sentry/' \
+  >/dev/null 2>&1; then
+  echo "ERROR: telemetry endpoint introduced — see ADR 0012." >&2
+  exit 1
+fi
+
+echo "==> pre-commit OK"

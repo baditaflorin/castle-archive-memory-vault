@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Conventional Commits validator.
+
+set -euo pipefail
+
+msg_file="$1"
+first_line="$(head -n1 "$msg_file" | sed 's/[[:space:]]*$//')"
+
+# Allow empty commits during merges and reverts
+case "$first_line" in
+  Merge*|Revert*) exit 0 ;;
+esac
+
+pattern='^(feat|fix|docs|chore|refactor|test|ops|data|build|perf|style|ci)(\([a-z0-9._-]+\))?!?: .{1,72}$'
+
+if [[ ! "$first_line" =~ $pattern ]]; then
+  echo "ERROR: commit message must follow Conventional Commits:" >&2
+  echo "  <type>(scope?): summary" >&2
+  echo "  e.g. feat(identity): add age key generation" >&2
+  exit 1
+fi

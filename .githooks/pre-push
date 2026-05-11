@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# pre-push: test, build, verify docs/, smoke.
+
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+echo "==> unit tests"
+npm test
+
+echo "==> build for Pages"
+npm run build
+
+echo "==> verify docs/index.html"
+test -f docs/index.html
+grep -E '<script[^>]+type="module"[^>]+/castle-archive-memory-vault/assets/' docs/index.html >/dev/null \
+  || (echo "docs/index.html missing expected hashed module script" && exit 2)
+
+echo "==> smoke"
+bash scripts/smoke.sh
+
+echo "==> pre-push OK"
