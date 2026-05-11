@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Private, local-first voice reflection vault for retreats. Record, transcribe, encrypt, and search reflections — all in your browser."
+    />
+    <meta name="theme-color" content="#141312" />
+    <title>Castle Archive · Memory Vault</title>
+    <link rel="preconnect" href="https://huggingface.co" />
+    <script>
+      // Register the cross-origin-isolation service worker BEFORE module scripts load.
+      // See docs/adr/0006-wasm-modules.md.
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./coi-serviceworker.js').catch(() => {
+          /* not fatal — multi-threaded WASM will fall back to single-thread. */
+        });
+      }
+    </script>
+    <script type="module" crossorigin src="/castle-archive-memory-vault/assets/index-JT_08ocj.js"></script>
+    <link rel="modulepreload" crossorigin href="/castle-archive-memory-vault/assets/react-TMushWyA.js">
+    <link rel="stylesheet" crossorigin href="/castle-archive-memory-vault/assets/index-Jwu4I4nt.css">
+  </head>
+  <body class="bg-stone-900 text-parchment-50 antialiased">
+    <div id="root"></div>
+  </body>
+</html>
