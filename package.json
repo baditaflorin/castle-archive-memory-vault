@@ -1,0 +1,61 @@
+{
+  "name": "castle-archive-memory-vault",
+  "version": "0.1.0",
+  "description": "Private, local-first voice reflection vault for encrypted retreat memories — record, transcribe, search, and selectively share clips, all in the browser.",
+  "type": "module",
+  "private": true,
+  "homepage": "https://baditaflorin.github.io/castle-archive-memory-vault/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/baditaflorin/castle-archive-memory-vault.git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "pages-preview": "vite preview --base /castle-archive-memory-vault/ --port 4173",
+    "lint": "eslint . && tsc --noEmit",
+    "fmt": "prettier --write \"src/**/*.{ts,tsx,css,md}\" \"tests/**/*.ts\" \"*.{json,md,yml,cjs}\"",
+    "fmt:check": "prettier --check \"src/**/*.{ts,tsx,css,md}\" \"tests/**/*.ts\" \"*.{json,md,yml,cjs}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "smoke": "bash scripts/smoke.sh",
+    "hooks:install": "git config core.hooksPath .githooks && chmod +x .githooks/*"
+  },
+  "dependencies": {
+    "@duckdb/duckdb-wasm": "1.29.0",
+    "@huggingface/transformers": "3.0.2",
+    "age-encryption": "0.2.4",
+    "idb": "8.0.0",
+    "marked": "14.1.3",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.49.1",
+    "@types/node": "22.10.5",
+    "@types/react": "18.3.18",
+    "@types/react-dom": "18.3.5",
+    "@typescript-eslint/eslint-plugin": "8.19.1",
+    "@typescript-eslint/parser": "8.19.1",
+    "@vitejs/plugin-react": "4.3.4",
+    "autoprefixer": "10.4.20",
+    "eslint": "9.17.0",
+    "eslint-plugin-react": "7.37.3",
+    "eslint-plugin-react-hooks": "5.1.0",
+    "globals": "15.14.0",
+    "happy-dom": "16.5.3",
+    "postcss": "8.5.1",
+    "prettier": "3.4.2",
+    "tailwindcss": "3.4.17",
+    "typescript": "5.7.3",
+    "typescript-eslint": "8.19.1",
+    "vite": "6.0.7",
+    "vitest": "2.1.8"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
