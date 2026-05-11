@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Castle Archive · loading</title>
+    <script>
+      // SPA shim for GitHub Pages: capture the originally requested path,
+      // stash it, and redirect to the app root so the SPA can pick it up.
+      // See docs/adr/0010-github-pages-publishing.md.
+      (function () {
+        var base = '/castle-archive-memory-vault/';
+        var here = location.pathname;
+        if (here.indexOf(base) === 0) {
+          var rest = here.slice(base.length);
+          if (rest && rest !== 'index.html') {
+            sessionStorage.setItem('cam_route', '#' + rest);
+          }
+        }
+        location.replace(base);
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
