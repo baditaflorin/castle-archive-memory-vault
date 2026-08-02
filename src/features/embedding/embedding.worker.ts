@@ -31,15 +31,16 @@ function getPipe(): Promise<AnyPipe> {
 
 interface InMessage {
   type: 'embed';
+  id: string;
   text: string;
 }
 
 self.addEventListener('message', (ev: MessageEvent<InMessage>) => {
   if (ev.data.type !== 'embed') return;
-  void run(ev.data.text);
+  void run(ev.data.id, ev.data.text);
 });
 
-async function run(text: string): Promise<void> {
+async function run(id: string, text: string): Promise<void> {
   try {
     const pipe = await getPipe();
     const output = (await pipe(text, { pooling: 'mean', normalize: true })) as {
@@ -49,10 +50,11 @@ async function run(text: string): Promise<void> {
       output.data instanceof Float32Array
         ? output.data
         : Float32Array.from(output.data as number[]);
-    (self as unknown as Worker).postMessage({ type: 'done', embedding: arr }, [arr.buffer]);
+    (self as unknown as Worker).postMessage({ type: 'done', id, embedding: arr }, [arr.buffer]);
   } catch (cause) {
     (self as unknown as Worker).postMessage({
       type: 'error',
+      id,
       message: cause instanceof Error ? cause.message : String(cause),
     });
   }

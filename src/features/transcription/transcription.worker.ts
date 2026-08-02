@@ -13,6 +13,12 @@ if (REMOTE_HOST) env.remoteHost = REMOTE_HOST;
 type AnyPipe = (input: unknown, opts?: unknown) => Promise<unknown>;
 let pipePromise: Promise<AnyPipe> | null = null;
 
+// Note: progress_callback below fires for whichever transcribe request is
+// currently downloading the (shared, memoized) model, so download-progress
+// messages are inherently not tied to one caller's id — they're broadcast
+// without an id and every listener treats them as informational only.
+// Per-request 'done'/'error' messages always carry the requesting call's id
+// so concurrent transcribe() calls on this shared worker can't be crossed.
 function getPipe(): Promise<AnyPipe> {
   if (!pipePromise) {
     pipePromise = pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny', {
@@ -33,6 +39,7 @@ function getPipe(): Promise<AnyPipe> {
 
 interface InMessage {
   type: 'transcribe';
+  id: string;
   audioPcm: Float32Array;
   sampleRate: number;
 }
@@ -62,12 +69,14 @@ async function run(msg: InMessage): Promise<void> {
 
     (self as unknown as Worker).postMessage({
       type: 'done',
+      id: msg.id,
       text: result.text,
       segments,
     });
   } catch (cause) {
     (self as unknown as Worker).postMessage({
       type: 'error',
+      id: msg.id,
       message: cause instanceof Error ? cause.message : String(cause),
     });
   }
